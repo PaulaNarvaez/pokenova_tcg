@@ -2,7 +2,7 @@
 
 Pokénova TCG es una tienda en desarrollo dedicada a productos de Pokémon: cartas, sobres, ETB, peluches, figuras, accesorios y otros artículos para jugar, coleccionar o regalar.
 
-La página permite explorar el catálogo y preparar consultas por **WhatsApp**. La atención de la tienda se realiza al **+56 9 9871 6582**; allí se confirman el precio vigente, la disponibilidad y el envío.
+La página permite explorar el catálogo y preparar consultas por **WhatsApp**. La atención de la tienda se realiza al **+56 9 1111 1111**; allí se confirman el precio vigente, la disponibilidad y el envío.
 
 > **Estado actual:** el catálogo contiene productos, precios y existencias de demostración. Las imágenes actuales son referenciales. Antes de ofrecer productos reales, debemos incorporar sus fotos y confirmar sus datos.
 
