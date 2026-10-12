@@ -6,6 +6,17 @@ import { whatsappUrl } from './site.config.js';
 import Buyback from './Buyback.jsx';
 
 const imagePath = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
+const backgroundGlints = Array.from({ length: 24 }, (_, index) => ({
+  id: index,
+  style: {
+    '--glint-x': `${((index * 37 + 5) % 95) + 2}%`,
+    '--glint-y': `${((index * 23 + 12) % 90) + 5}%`,
+    '--glint-size': `${12 + (index % 4) * 3}px`,
+    '--glint-delay': `-${((index * 1.7) % 10).toFixed(1)}s`,
+    '--glint-duration': `${6 + (index % 5)}s`,
+    '--glint-color': ['#c49a32', '#7298cf', '#bc88a4'][index % 3],
+  },
+}));
 
 function Pokeball({ className = '' }) {
   return <span aria-hidden="true" className={`pokeball ${className}`}><span /></span>;
@@ -95,7 +106,11 @@ export default function App() {
   const orderMessage = `¡Hola, Pokenova! Quiero consultar disponibilidad y precios de estos productos:\n\n${cart.map(item => { const product = products.find(p => p.id === item.productId); return `${item.quantity} × ${product.name} (${formatPrice(product.price)} c/u, valor de ejemplo)`; }).join('\n')}\n\nTotal de ejemplo: ${formatPrice(subtotal)} CLP. ¿Me confirman el valor final y el envío?`;
 
   return <>
-    <div className="animated-background" aria-hidden="true"><span className="background-orb orb-yellow" /><span className="background-orb orb-blue" /><span className="background-orb orb-pink" /><span className="background-spark spark-a">✦</span><span className="background-spark spark-b">✧</span></div>
+    <div className="animated-background" aria-hidden="true">
+      <span className="background-orb orb-yellow" /><span className="background-orb orb-blue" /><span className="background-orb orb-pink" />
+      {backgroundGlints.map(glint => <span className="background-glint" key={glint.id} style={glint.style} />)}
+      <span className="background-spark spark-a">✦</span><span className="background-spark spark-b">✧</span>
+    </div>
     <a className="skip-link" href="#catalogo">Saltar al catálogo</a>
     <div className="announcement"><span><Zap size={13} fill="currentColor" /> Tu próxima aventura empieza aquí.</span><span className="announcement-right">CARTAS. COLECCIONES. BUENA ENERGÍA. <Sparkles size={13} /></span></div>
     <header className="header">
