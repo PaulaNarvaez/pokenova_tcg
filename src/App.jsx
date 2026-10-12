@@ -3,7 +3,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Menu, M
 import { categories, filterProducts, formatPrice, products } from './catalog.js';
 import { addToCart, getCartCount, getCartSubtotal, readCart, removeFromCart, saveCart, updateQuantity } from './cart.js';
 import { whatsappUrl } from './site.config.js';
-import Market from './Market.jsx';
+import Buyback from './Buyback.jsx';
 
 const imagePath = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
 
@@ -84,17 +84,26 @@ export default function App() {
   };
   const chooseCategory = (id) => { setCategory(id); setQuery(''); document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' }); };
   const closeMenu = () => setMenuOpen(false);
+  const consult = (productId) => {
+    const next = productId ? removeFromCart(cart, productId) : [];
+    saveCart(getLocalStorage(), next);
+    setCart(next);
+    setSelected(null);
+    setCartOpen(false);
+    setToast(null);
+  };
   const orderMessage = `¡Hola, Pokenova! Quiero consultar disponibilidad y precios de estos productos:\n\n${cart.map(item => { const product = products.find(p => p.id === item.productId); return `${item.quantity} × ${product.name} (${formatPrice(product.price)} c/u, valor de ejemplo)`; }).join('\n')}\n\nTotal de ejemplo: ${formatPrice(subtotal)} CLP. ¿Me confirman el valor final y el envío?`;
 
   return <>
+    <div className="animated-background" aria-hidden="true"><span className="background-orb orb-yellow" /><span className="background-orb orb-blue" /><span className="background-orb orb-pink" /><span className="background-spark spark-a">✦</span><span className="background-spark spark-b">✧</span></div>
     <a className="skip-link" href="#catalogo">Saltar al catálogo</a>
     <div className="announcement"><span><Zap size={13} fill="currentColor" /> Tu próxima aventura empieza aquí.</span><span className="announcement-right">CARTAS. COLECCIONES. BUENA ENERGÍA. <Sparkles size={13} /></span></div>
     <header className="header">
       <div className="nav-wrap container">
-        <a className="brand" href="#inicio" aria-label="Pokenova TCG, inicio"><Pokeball /><span>pokénova<span className="brand-tcg">TCG & MORE</span></span></a>
+        <a className="brand" href="#inicio" aria-label="Pokenova TCG, inicio"><img className="brand-symbol" src={imagePath('/favicon.svg?version=2')} alt="" /><span>pokénova<span className="brand-tcg">TCG & MORE</span></span></a>
         <nav className={menuOpen ? 'navigation open' : 'navigation'} aria-label="Navegación principal">
           <a href="#catalogo" onClick={closeMenu}>Explorar tienda <ChevronDown size={12} /></a>
-          <a href="#mercado" onClick={closeMenu}>Radar TCG <span className="nav-new">NUEVO</span></a>
+          <a href="#compramos" onClick={closeMenu}>Compramos tus cartas</a>
           <a href="#nosotros" onClick={closeMenu}>Quiénes somos</a>
         </nav>
         <div className="nav-actions">
@@ -108,7 +117,6 @@ export default function App() {
     <main>
       <section className="hero container" id="inicio">
         <div className="hero-copy">
-          <div className="eyebrow hero-eyebrow"><span className="live-dot" /> PARA TU LADO COLECCIONISTA</div>
           <h1>Tu próxima<br />{' '}gran <span className="collection-word">colección<svg viewBox="0 0 440 25" aria-hidden="true"><path d="M4 17C90 1 325 0 435 13M14 22C148 9 303 9 409 21" /></svg></span>.</h1>
           <p>La emoción de abrir un sobre. La alegría de encontrar<br className="desktop-break" /> tu Pokémon favorito. Todo empieza en Pokénova.</p>
           <div className="hero-buttons"><a href="#catalogo" className="button button-dark">Encuentra tu favorito <ArrowUpRight size={19} /></a><a href="#nosotros" className="text-link">Conócenos <span><ArrowRight size={17} /></span></a></div>
@@ -130,10 +138,10 @@ export default function App() {
       <section className="category-section container" aria-labelledby="category-title">
         <div className="section-intro"><div><span className="eyebrow">HAY UN FAVORITO PARA CADA FAN</span><h2 id="category-title">Encuentra tu tipo.</h2></div><p>Para tu mazo, tu repisa<br />{' '}o ese regalo que lo dice todo.</p></div>
         <div className="category-grid">
-          <button className="category-tile category-cards" onClick={() => chooseCategory('cards')}><span className="tile-index">01 / TCG</span><div><h3>Cartas<br />{' '}individuales</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><img src={imagePath('/images/charizard-card.webp')} alt="Carta Charizard ex" /></button>
-          <button className="category-tile category-sealed" onClick={() => chooseCategory('sealed')}><span className="tile-index">02 / LA SORPRESA</span><div><h3>Productos<br />{' '}sellados</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-package"><Pokeball /><span>TCG</span></div></button>
-          <button className="category-tile category-plush" onClick={() => chooseCategory('plush')}><span className="tile-index">03 / COMPAÑEROS</span><div><h3>Peluches<br />{' '}& figuras</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><img src={imagePath('/images/eevee.png')} alt="Eevee" /></button>
-          <button className="category-tile category-accessories" onClick={() => chooseCategory('accessories')}><span className="tile-index">04 / EL EXTRA</span><div><h3>Cuida tu<br />{' '}colección</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-binder"><Pokeball /><span>COLLECT<br />{' '}GOOD THINGS.</span></div></button>
+          <button className="category-tile category-cards" onClick={() => chooseCategory('cards')}><span className="tile-index">01 / TCG</span><div className="tile-copy"><h3>Cartas<br />{' '}individuales</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><img src={imagePath('/images/charizard-card.webp')} alt="" /></div></button>
+          <button className="category-tile category-sealed" onClick={() => chooseCategory('sealed')}><span className="tile-index">02 / LA SORPRESA</span><div className="tile-copy"><h3>Productos<br />{' '}sellados</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><div className="tile-package"><Pokeball /><span>TCG</span></div></div></button>
+          <button className="category-tile category-plush" onClick={() => chooseCategory('plush')}><span className="tile-index">03 / COMPAÑEROS</span><div className="tile-copy"><h3>Peluches<br />{' '}& figuras</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><img src={imagePath('/images/eevee.png')} alt="" /></div></button>
+          <button className="category-tile category-accessories" onClick={() => chooseCategory('accessories')}><span className="tile-index">04 / EL EXTRA</span><div className="tile-copy"><h3>Cuida tu<br />{' '}colección</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><div className="tile-binder"><Pokeball /><span>COLLECT<br />{' '}GOOD THINGS.</span></div></div></button>
         </div>
       </section>
 
@@ -153,7 +161,7 @@ export default function App() {
         <div className="catalog-bottom"><span><MessageCircle size={17} /> ¿Buscas algo especial? Vamos a encontrarlo.</span><a href={whatsappUrl('¡Hola, Pokenova! Estoy buscando un producto Pokémon. ¿Me ayudan con disponibilidad y precio?')} target="_blank" rel="noreferrer">Hablemos por WhatsApp <ArrowUpRight size={17} /></a></div>
       </section>
 
-      <Market />
+      <Buyback />
 
       <section className="about-section container" id="nosotros" aria-labelledby="about-title">
         <div className="about-art"><div className="about-outline">FAN<br />{' '}CLUB.</div><img src={imagePath('/images/gengar.png')} alt="Gengar" loading="lazy" /><div className="about-badge"><Heart size={23} /><span>DE FANS<br />{' '}<strong>PARA FANS</strong></span></div><Sparkles size={34} className="about-spark" /></div>
@@ -163,15 +171,15 @@ export default function App() {
       <section className="contact-banner container"><div><span className="eyebrow">TÚ PREGUNTA. NOSOTROS TE AYUDAMOS.</span><h2>¿Una duda? <span>¡Te leemos!</span><span className="chat-emoji" aria-hidden="true">💬</span></h2><p>Consulta precios, disponibilidad o ese producto que tienes en mente.</p></div><a className="button button-dark" href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar precios y disponibilidad.')} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Escríbenos por WhatsApp <ArrowUpRight size={18} /></a></section>
     </main>
 
-    <footer className="footer"><div className="container footer-top"><a className="brand" href="#inicio"><Pokeball /><span>pokénova<span className="brand-tcg">TCG & MORE</span></span></a><p>Un universo por coleccionar.<br />{' '}Una aventura para compartir.</p><div className="footer-links"><a href="#catalogo">La tienda</a><a href="#mercado">Radar TCG</a><a href="#nosotros">Nuestra historia</a><a href={whatsappUrl('¡Hola, Pokenova! Quisiera hacer una consulta.')} target="_blank" rel="noreferrer">Contacto <ArrowUpRight size={13} /></a></div></div><div className="container footer-bottom"><span>© {new Date().getFullYear()} Pokénova TCG. Hecho con buena energía.</span><span>Proyecto independiente. Pokémon y sus marcas pertenecen a sus respectivos titulares.</span></div></footer>
+    <footer className="footer"><div className="container footer-top"><a className="brand" href="#inicio"><img className="brand-symbol" src={imagePath('/favicon.svg?version=2')} alt="" /><span>pokénova<span className="brand-tcg">TCG & MORE</span></span></a><p>Un universo por coleccionar.<br />{' '}Una aventura para compartir.</p><div className="footer-links"><a href="#catalogo">La tienda</a><a href="#compramos">Compramos tus cartas</a><a href="#nosotros">Nuestra historia</a><a href={whatsappUrl('¡Hola, Pokenova! Quisiera hacer una consulta.')} target="_blank" rel="noreferrer">Contacto <ArrowUpRight size={13} /></a></div></div><div className="container footer-bottom"><span>© {new Date().getFullYear()} Pokénova TCG. Hecho con ❤️.</span><span>Proyecto independiente. Pokémon y sus marcas pertenecen a sus respectivos titulares.</span></div></footer>
     <a className="floating-whatsapp" href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar un precio.')} target="_blank" rel="noreferrer" aria-label="Consultar precios por WhatsApp"><MessageCircle size={25} /><span>¿Hablamos?</span><span className="whatsapp-dot" /></a>
     <div className={toast ? 'toast visible' : 'toast'} role="status" aria-live="polite">{toast && <><span><Check size={17} /></span>{toast.message}<button className="icon-button" aria-label="Cerrar aviso" onClick={() => setToast(null)}><X size={16} /></button></>}</div>
 
-    {selected && <Dialog onClose={() => setSelected(null)} title="Un favorito de cerca" className="product-dialog"><div className={`detail-art tone-${selected.tone}`}><ProductArt product={selected} /></div><span className="eyebrow">{selected.categoryLabel}</span><h3>{selected.name}</h3><p>{selected.description}</p><div className="detail-price"><strong>{formatPrice(selected.price)} CLP</strong><span>Precio de ejemplo · Consulta el valor vigente.</span></div>{selected.category === 'plush' && <p className="image-disclaimer">Imagen del personaje como referencia; no representa una fotografía del peluche disponible.</p>}<div className="detail-actions"><button className="button button-dark" onClick={() => add(selected)}><ShoppingBag size={18} /> Agregar al carrito</button><a className="button button-outline" href={whatsappUrl(`¡Hola, Pokenova! Quisiera consultar el precio y disponibilidad de ${selected.name}.`)} target="_blank" rel="noreferrer"><MessageCircle size={18} /> Consultar precio</a></div></Dialog>}
+    {selected && <Dialog onClose={() => setSelected(null)} title="Un favorito de cerca" className="product-dialog"><div className={`detail-art tone-${selected.tone}`}><ProductArt product={selected} /></div><span className="eyebrow">{selected.categoryLabel}</span><h3>{selected.name}</h3><p>{selected.description}</p><div className="detail-price"><strong>{formatPrice(selected.price)} CLP</strong><span>Precio de ejemplo · Consulta el valor vigente.</span></div>{selected.category === 'plush' && <p className="image-disclaimer">Imagen del personaje como referencia; no representa una fotografía del peluche disponible.</p>}<div className="detail-actions"><button className="button button-dark" onClick={() => add(selected)}><ShoppingBag size={18} /> Agregar al carrito</button><a className="button button-outline" href={whatsappUrl(`¡Hola, Pokenova! Quisiera consultar el precio y disponibilidad de ${selected.name}.`)} onClick={() => consult(selected.id)} target="_blank" rel="noreferrer"><MessageCircle size={18} /> Consultar precio</a></div></Dialog>}
 
     {cartOpen && <Dialog onClose={() => setCartOpen(false)} title={`Tu colección (${count})`} className="cart-dialog">
-      <p className="cart-note">Guarda tus favoritos y consulta tu pedido por WhatsApp.</p>
-      {cart.length === 0 ? <div className="cart-empty"><div><ShoppingBag size={43} strokeWidth={1.3} /><Sparkles size={21} /></div><h3>Una aventura por llenar.</h3><p>Tu próxima colección comienza<br />{' '}con un pequeño favorito.</p><button className="button button-dark" onClick={() => { setCartOpen(false); document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' }); }}>Explorar la tienda <ArrowRight size={17} /></button></div> : <><div className="cart-items">{cart.map(item => { const product = products.find(p => p.id === item.productId); return <article className="cart-item" key={item.productId}><div className={`cart-item-art tone-${product.tone}`}><ProductArt product={product} /></div><div className="cart-item-info"><span>{product.categoryLabel}</span><h3>{product.name}</h3><strong>{formatPrice(product.price)} CLP</strong><div className="quantity-controls"><button aria-label={`Reducir cantidad de ${product.name}`} onClick={() => setCart(previous => updateQuantity(previous, product.id, item.quantity - 1, product.stock))}><Minus size={13} /></button><span aria-label={`Cantidad: ${item.quantity}`}>{item.quantity}</span><button aria-label={`Aumentar cantidad de ${product.name}`} disabled={item.quantity >= product.stock} onClick={() => setCart(previous => updateQuantity(previous, product.id, item.quantity + 1, product.stock))}><Plus size={13} /></button></div></div><button className="remove-item icon-button" aria-label={`Eliminar ${product.name}`} onClick={() => setCart(previous => removeFromCart(previous, product.id))}><Trash2 size={17} /></button></article>; })}</div><div className="cart-summary"><div><span>Subtotal de ejemplo</span><strong>{formatPrice(subtotal)} CLP</strong></div><p>Los precios y el stock son demostrativos. El valor final, la disponibilidad y el envío se confirman por WhatsApp.</p><a className="button button-dark" href={whatsappUrl(orderMessage)} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Consultar mi pedido <ArrowUpRight size={17} /></a><span className="cart-checkout-note"><ShieldCheck size={14} /> Esta consulta no realiza un pago ni reserva productos.</span></div></>}
+      <p className="cart-note">Arma tu consulta. El carrito se vacía al abrir el pedido en WhatsApp.</p>
+      {cart.length === 0 ? <div className="cart-empty"><div><ShoppingBag size={43} strokeWidth={1.3} /><Sparkles size={21} /></div><h3>Una aventura por llenar.</h3><p>Tu próxima colección comienza<br />{' '}con un pequeño favorito.</p><button className="button button-dark" onClick={() => { setCartOpen(false); document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' }); }}>Explorar la tienda <ArrowRight size={17} /></button></div> : <><div className="cart-items">{cart.map(item => { const product = products.find(p => p.id === item.productId); return <article className="cart-item" key={item.productId}><div className={`cart-item-art tone-${product.tone}`}><ProductArt product={product} /></div><div className="cart-item-info"><span>{product.categoryLabel}</span><h3>{product.name}</h3><strong>{formatPrice(product.price)} CLP</strong><div className="quantity-controls"><button aria-label={`Reducir cantidad de ${product.name}`} onClick={() => setCart(previous => updateQuantity(previous, product.id, item.quantity - 1, product.stock))}><Minus size={13} /></button><span aria-label={`Cantidad: ${item.quantity}`}>{item.quantity}</span><button aria-label={`Aumentar cantidad de ${product.name}`} disabled={item.quantity >= product.stock} onClick={() => setCart(previous => updateQuantity(previous, product.id, item.quantity + 1, product.stock))}><Plus size={13} /></button></div></div><button className="remove-item icon-button" aria-label={`Eliminar ${product.name}`} onClick={() => setCart(previous => removeFromCart(previous, product.id))}><Trash2 size={17} /></button></article>; })}</div><div className="cart-summary"><div><span>Subtotal de ejemplo</span><strong>{formatPrice(subtotal)} CLP</strong></div><p>Los precios y el stock son demostrativos. El valor final, la disponibilidad y el envío se confirman por WhatsApp.</p><a className="button button-dark" href={whatsappUrl(orderMessage)} onClick={() => consult()} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Consultar mi pedido <ArrowUpRight size={17} /></a><span className="cart-checkout-note"><ShieldCheck size={14} /> Esta consulta no realiza un pago ni reserva productos.</span></div></>}
     </Dialog>}
   </>;
 }

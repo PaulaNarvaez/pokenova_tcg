@@ -18,15 +18,20 @@ Ofrecer una experiencia de compra sencilla para explorar productos Pokémon, con
 
 ## Primera versión de la tienda
 
-La aplicación incluye una portada con personajes Pokémon, diseño adaptable a celulares, iconos y animaciones, categorías, búsqueda, orden por precio, detalles de productos, una sección **Quiénes somos** y un carrito que se guarda en el navegador.
+La aplicación incluye una portada con personajes Pokémon, diseño adaptable a celulares, categorías, búsqueda, orden por precio, detalles de productos, una sección **Quiénes somos** y un carrito de consulta que se guarda en el navegador. El icono de la pestaña usa el mismo logo de la tienda. El fondo tiene una animación suave que respeta la preferencia del sistema de reducir movimiento.
 
-Los botones de **WhatsApp** permiten consultar un producto o enviar el contenido del carrito al **+56 9 9871 6582**. Esta versión no realiza pagos ni reservas; la disponibilidad, el precio final y el envío se confirman por WhatsApp.
+Los botones de **WhatsApp** permiten consultar un producto o preparar un mensaje con el contenido del carrito al **+56 9 9871 6582**. Esta versión no realiza pagos ni reservas; la disponibilidad, el precio final y el envío se confirman por WhatsApp.
 
-### Precios de venta y referencias del mercado
+Al pulsar **Consultar mi pedido**, se abre WhatsApp con el mensaje y se vacía todo el carrito local. Al consultar un producto individual desde su ventana de detalles, se elimina solo ese producto del carrito y se conservan los demás. Abrir WhatsApp no confirma que el mensaje se haya enviado ni que el pedido esté aceptado.
+
+### Compramos tus cartas
+
+La tienda incluye una sección para ofrecer **challa y cartas sueltas, lotes o productos sellados**. El botón prepara una consulta por WhatsApp para coordinar la tasación. La evaluación depende del estado, contenido y características de los productos; no se promete un precio fijo ni una compra automática.
+
+### Catálogo de demostración
 
 - El catálogo, los precios CLP y las existencias en `src/catalog.js` son **de demostración**, hasta que se cargue el inventario real de la tienda. Las imágenes son referenciales; los personajes no son fotografías de los peluches.
-- **Radar TCG** consulta la API pública de [TCGdex](https://tcgdex.dev/markets-prices), que proporciona referencias de TCGplayer y Cardmarket. Cada precio disponible muestra su moneda original (USD o EUR), fuente y fecha; no se convierte a CLP ni se usa como precio de venta.
-- Si una referencia no existe o la conexión falla, la interfaz lo indica y ofrece un enlace a la fuente. No se muestran cotizaciones inventadas como respaldo.
+- Los importes del carrito son ejemplos para presentar el flujo de consulta. La tienda confirma por WhatsApp el valor vigente y la disponibilidad.
 - Las fuentes de las imágenes se registran en `public/images/assets-sources.json`.
 
 ## Desarrollo
@@ -39,7 +44,7 @@ npm run dev
 ```
 
 ```sh
-npm test            # Lógica de catálogo, carrito y referencias de precios
+npm test            # Lógica de catálogo y carrito
 npm run test:e2e    # Flujos de escritorio y móvil con Playwright
 npm run build      # Genera el sitio estático en dist/
 npm run preview    # Comprueba la compilación de producción
@@ -47,11 +52,11 @@ npm run preview    # Comprueba la compilación de producción
 
 Playwright utiliza `/usr/bin/chromium` si está disponible, o su navegador instalado. Para instalarlo en otra máquina, ejecuta `npx playwright install chromium`; también puedes indicar una ruta mediante `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
 
-El número de WhatsApp se configura en `src/site.config.js`. El catálogo está en `src/catalog.js`; las cartas seguidas por el radar están en `src/market.js`.
+La atención de la tienda se realiza por WhatsApp. El número se configura en `src/site.config.js`. El catálogo está en `src/catalog.js`.
 
 ### Red del entorno
 
-La instalación utiliza `registry.npmjs.org`. Radar TCG requiere acceso HTTPS a `api.tcgdex.net`. En el entorno de nube actual, esta API respondió con un bloqueo de red: se verificaron el contrato documentado, el manejo de errores y el diseño con datos sintéticos en pruebas, pero **no se validaron cotizaciones actuales**. Los datos sintéticos están únicamente en las pruebas.
+La instalación de dependencias utiliza `registry.npmjs.org`. La tienda utiliza imágenes locales y no necesita una API de precios ni una base de datos. Los enlaces de atención abren WhatsApp.
 
 ### Publicar en GitHub Pages
 

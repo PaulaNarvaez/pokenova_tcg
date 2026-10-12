@@ -1,30 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-// Synthetic fixtures exercise rendering; these are not real market quotations.
-const syntheticPrices = {
-  'sv03-223': 42.5,
-  'swsh12-049': 1.25,
-  'sv03.5-173': 17.75,
-};
-
-async function mockMarket(page) {
-  await page.route('https://api.tcgdex.net/v2/en/cards/**', async route => {
-    const id = route.request().url().split('/').at(-1);
-    await route.fulfill({
-      json: {
-        id,
-        pricing: {
-          tcgplayer: {
-            unit: 'USD',
-            updated: '2026-10-10T08:00:00Z',
-            holofoil: { marketPrice: syntheticPrices[id] },
-          },
-        },
-      },
-    });
-  });
-}
-
 function decodedWhatsapp(href) {
   const url = new URL(href);
   expect(url.origin).toBe('https://wa.me');
@@ -32,17 +7,34 @@ function decodedWhatsapp(href) {
   return url.searchParams.get('text');
 }
 
-test('desktop browsing, market references, product details, and persistent cart', async ({ page }) => {
-  await mockMarket(page);
+async function stubWhatsapp(context) {
+  // Context routing also intercepts the popup's initial navigation. No message
+  // is sent and no WhatsApp server is contacted by these interaction tests.
+  await context.route('https://wa.me/**', route => route.fulfill({
+    contentType: 'text/html',
+    body: '<!doctype html><html><title>Consulta de prueba</title><body><h1>WhatsApp de prueba</h1></body></html>',
+  }));
+}
+
+async function openStubbedWhatsapp(page, link) {
+  const href = await link.getAttribute('href');
+  const popupPromise = page.waitForEvent('popup');
+  await link.click();
+  const popup = await popupPromise;
+  await expect(popup).toHaveURL(href);
+  await expect(popup.getByRole('heading', { name: 'WhatsApp de prueba' })).toBeVisible();
+  await popup.close();
+}
+
+async function storedCart(page) {
+  return page.evaluate(() => JSON.parse(window.localStorage.getItem('pokenova-cart-v1')));
+}
+
+test('desktop browsing, product details, persistent cart, and clearing a consulted order', async ({ page, context }) => {
+  await stubWhatsapp(context);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Tu próxima');
   await expect(page.locator('.product-card')).toHaveCount(8);
-
-  const firstMarket = page.locator('.market-row').first();
-  await expect(firstMarket.locator('.market-price strong')).toHaveText('USD 42,50');
-  await expect(firstMarket.locator('.market-price')).toContainText('TCGplayer · 10-10-26');
-  await expect(firstMarket.getByRole('link', { name: 'Ver fuente' }))
-    .toHaveAttribute('href', 'https://www.tcgplayer.com/product/509980');
 
   await page.locator('.filter-tabs').getByRole('button', { name: 'Cartas', exact: true }).click();
   await expect(page.locator('.product-card')).toHaveCount(2);
@@ -77,13 +69,6 @@ test('desktop browsing, market references, product details, and persistent cart'
   await cart.getByRole('button', { name: 'Aumentar cantidad de Peluche Eevee' }).click();
   cart = page.getByRole('dialog', { name: 'Tu colección (2)' });
   await expect(cart.getByLabel('Cantidad: 2', { exact: true })).toHaveText('2');
-  const orderLink = cart.getByRole('link', { name: 'Consultar mi pedido' });
-  const message = decodedWhatsapp(await orderLink.getAttribute('href'));
-  expect(message).toContain('2 × Peluche Eevee');
-  expect(message).toContain('$22.990 c/u, valor de ejemplo');
-  expect(message).toContain('Total de ejemplo: $45.980 CLP');
-  expect(message).toContain('¿Me confirman el valor final y el envío?');
-
   await page.reload();
   await page.getByRole('button', { name: 'Abrir carrito, 2 productos' }).click();
   cart = page.getByRole('dialog', { name: 'Tu colección (2)' });
@@ -103,6 +88,22 @@ test('desktop browsing, market references, product details, and persistent cart'
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Abrir carrito, 0 productos' })).toBeFocused();
+  await page.getByRole('button', { name: 'Agregar Peluche Eevee al carrito', exact: true }).click();
+  await page.getByRole('button', { name: 'Agregar Peluche Eevee al carrito', exact: true }).click();
+  await page.getByRole('button', { name: 'Abrir carrito, 2 productos' }).click();
+  const orderLink = page.getByRole('dialog').getByRole('link', { name: 'Consultar mi pedido' });
+  const message = decodedWhatsapp(await orderLink.getAttribute('href'));
+  expect(message).toContain('2 × Peluche Eevee');
+  expect(message).toContain('$22.990 c/u, valor de ejemplo');
+  expect(message).toContain('Total de ejemplo: $45.980 CLP');
+  expect(message).toContain('¿Me confirman el valor final y el envío?');
+  await openStubbedWhatsapp(page, orderLink);
+  await expect(page.getByRole('button', { name: 'Abrir carrito, 0 productos' })).toBeVisible();
+  await expect.poll(() => storedCart(page)).toEqual([]);
+  await page.reload();
+  await page.getByRole('button', { name: 'Abrir carrito, 0 productos' }).click();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Una aventura por llenar.' })).toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(page.locator('.toast')).not.toHaveClass(/visible/);
   await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
   await page.screenshot({ path: '/tmp/pokenova-desktop.png', fullPage: true, animations: 'disabled' });
@@ -110,7 +111,6 @@ test('desktop browsing, market references, product details, and persistent cart'
 
 test('mobile navigation, cart, and page width', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await mockMarket(page);
   await page.goto('/');
   const openMenu = page.getByRole('button', { name: 'Abrir menú' });
   await expect(openMenu).toBeVisible();
@@ -138,29 +138,45 @@ test('mobile navigation, cart, and page width', async ({ page }) => {
   await page.screenshot({ path: '/tmp/pokenova-mobile.png', fullPage: true, animations: 'disabled' });
 });
 
-test('failed market requests show an unavailable state and recover on retry', async ({ page }) => {
-  let fail = true;
-  let requestCount = 0;
-  await page.route('https://api.tcgdex.net/v2/en/cards/**', async route => {
-    requestCount += 1;
-    if (fail) return route.fulfill({ status: 503, body: 'Synthetic service unavailable' });
-    const id = route.request().url().split('/').at(-1);
-    return route.fulfill({ json: {
-      pricing: { tcgplayer: { unit: 'USD', updated: '2026-10-10T08:00:00Z', normal: { marketPrice: syntheticPrices[id] } } },
-    } });
-  });
+test('consulting one product clears only that product and preserves the other cart items', async ({ page, context }) => {
+  await stubWhatsapp(context);
   await page.goto('/');
-  await expect(page.locator('.market-error')).toContainText('No pudimos consultar los precios');
-  await expect(page.locator('.market-row .market-price strong')).toHaveText(['—', '—', '—']);
-  await expect(page.locator('.market-row .market-price').first()).toContainText('Referencia no disponible');
-  // React StrictMode can start and cancel an initial effect during development.
-  const initialRequests = requestCount;
-  expect(initialRequests).toBeGreaterThanOrEqual(3);
-  fail = false;
-  await page.getByRole('button', { name: 'Actualizar precios del mercado' }).click();
-  await expect(page.locator('.market-row .market-price strong').first()).toHaveText('USD 42,50');
-  await expect(page.locator('.market-error')).toHaveCount(0);
-  expect(requestCount).toBe(initialRequests + 3);
+  const addCharizard = page.getByRole('button', { name: 'Agregar Charizard ex · Obsidian Flames al carrito', exact: true });
+  await addCharizard.click();
+  await addCharizard.click();
+  await page.getByRole('button', { name: 'Agregar Peluche Eevee al carrito', exact: true }).click();
+  await page.getByRole('button', { name: 'Ver detalles de Charizard ex · Obsidian Flames' }).click();
+  const link = page.getByRole('dialog').getByRole('link', { name: 'Consultar precio' });
+  expect(decodedWhatsapp(await link.getAttribute('href'))).toContain('Charizard ex · Obsidian Flames');
+  await openStubbedWhatsapp(page, link);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Abrir carrito, 1 productos' })).toBeVisible();
+  await expect.poll(() => storedCart(page)).toEqual([{ productId: 'eevee-plush', quantity: 1 }]);
+  await page.reload();
+  await page.getByRole('button', { name: 'Abrir carrito, 1 productos' }).click();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Peluche Eevee' })).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Charizard ex · Obsidian Flames' })).toHaveCount(0);
+});
+
+test('buyback offers challa and sealed products through WhatsApp and removes market requests', async ({ page, context }) => {
+  const marketRequests = [];
+  page.on('request', request => {
+    if (request.url().includes('api.tcgdex.net')) marketRequests.push(request.url());
+  });
+  await stubWhatsapp(context);
+  await page.goto('/');
+  await expect(page.locator('#compramos')).toBeVisible();
+  const challa = page.locator('#compramos').getByRole('link', { name: 'Vender mi challa' });
+  const sealed = page.locator('#compramos').getByRole('link', { name: 'Ofrecer productos sellados' });
+  expect(decodedWhatsapp(await challa.getAttribute('href'))).toMatch(/challa/i);
+  expect(decodedWhatsapp(await sealed.getAttribute('href'))).toMatch(/sellados/i);
+  await openStubbedWhatsapp(page, challa);
+  await openStubbedWhatsapp(page, sealed);
+  await expect(page.getByRole('link', { name: 'Radar TCG' })).toHaveCount(0);
+  await expect(page.locator('#mercado')).toHaveCount(0);
+  await expect(page.locator('main')).not.toContainText('USD');
+  await expect(page.locator('.hero-copy')).not.toContainText('PARA TU LADO COLECCIONISTA');
+  expect(marketRequests).toEqual([]);
 });
 
 test('a blocked localStorage getter still allows an in-memory shopping cart', async ({ page }) => {
@@ -172,7 +188,6 @@ test('a blocked localStorage getter still allows an in-memory shopping cart', as
       get() { throw new DOMException('Synthetic blocked storage', 'SecurityError'); },
     });
   });
-  await mockMarket(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Agregar Peluche Pikachu al carrito', exact: true }).click();
@@ -186,17 +201,64 @@ test('a blocked localStorage getter still allows an in-memory shopping cart', as
 });
 
 test('decorative movement respects the reduced-motion preference', async ({ page }) => {
-  await mockMarket(page);
   await page.goto('/');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await expect.poll(() => page.locator('.hero-pikachu').evaluate(el => getComputedStyle(el).animationName)).toBe('floating');
   await expect.poll(() => page.locator('.ticker > div').evaluate(el => getComputedStyle(el).animationName)).toBe('marquee');
+  await expect.poll(() => page.locator('.background-orb').first().evaluate(el => getComputedStyle(el).animationName)).toBe('backgroundDrift');
+  await expect.poll(() => page.locator('.background-spark').first().evaluate(el => getComputedStyle(el).animationName)).toBe('backgroundTwinkle');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const motion = await page.evaluate(() => ({
     scroll: getComputedStyle(document.documentElement).scrollBehavior,
-    animations: ['.hero-pikachu', '.ticker > div', '.hero-spark', '.wave', '.chat-emoji']
+    animations: ['.hero-pikachu', '.ticker > div', '.hero-spark', '.wave', '.chat-emoji', '.background-orb', '.background-spark']
       .map(selector => getComputedStyle(document.querySelector(selector)).animationName),
   }));
   expect(motion.scroll).toBe('auto');
-  expect(motion.animations).toEqual(['none', 'none', 'none', 'none', 'none']);
+  expect(motion.animations).toEqual(Array(7).fill('none'));
 });
+
+function overlaps(a, b) {
+  return a.x < b.x + b.width - 1 && a.x + a.width > b.x + 1
+    && a.y < b.y + b.height - 1 && a.y + a.height > b.y + 1;
+}
+
+for (const width of [320, 390, 768, 1024, 1440]) {
+  test(`category layout and brand remain intact at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('.category-tile')).toHaveCount(4);
+    const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(pageWidth).toBeLessThanOrEqual(width);
+    for (const tile of await page.locator('.category-tile').all()) {
+      const bounds = await tile.boundingBox();
+      const label = await tile.locator('.tile-index').boundingBox();
+      const copy = await tile.locator('.tile-copy').boundingBox();
+      const heading = await tile.getByRole('heading', { level: 3 }).boundingBox();
+      const visual = await tile.locator('.tile-visual').boundingBox();
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      for (const box of [label, copy, heading, visual]) {
+        expect(box.width).toBeGreaterThan(0);
+        expect(box.height).toBeGreaterThan(0);
+        expect(box.x).toBeGreaterThanOrEqual(bounds.x - 1);
+        expect(box.x + box.width).toBeLessThanOrEqual(bounds.x + bounds.width + 1);
+      }
+      expect(overlaps(label, heading)).toBe(false);
+      expect(overlaps(label, visual)).toBe(false);
+      expect(overlaps(copy, visual)).toBe(false);
+    }
+    const logo = page.locator('header .brand img.brand-symbol');
+    await expect(logo).toBeVisible();
+    expect(await logo.evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+    const faviconHref = await page.locator('link[rel="icon"]').getAttribute('href');
+    const logoSrc = await logo.getAttribute('src');
+    const normalizePath = value => {
+      const url = new URL(value, page.url());
+      return `${url.origin}${url.pathname}`;
+    };
+    expect(normalizePath(logoSrc)).toBe(normalizePath(faviconHref));
+    await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
+    await page.screenshot({ path: `/tmp/pokenova-refresh-${width}.png`, fullPage: true, animations: 'disabled' });
+  });
+}
