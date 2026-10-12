@@ -1,0 +1,118 @@
+{
+  "assets": [
+    {
+      "file": "pikachu-hero.png",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png",
+      "format": "PNG",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "bytes": 79086,
+      "sha256": "6a9305fbd6f02345153567f4142faf019380b1a1c839cfa3f2349cc36d536a40",
+      "description": "Pokémon HOME character render shared through PokeAPI sprites",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    },
+    {
+      "file": "pikachu.png",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png",
+      "format": "PNG",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "bytes": 79086,
+      "sha256": "6a9305fbd6f02345153567f4142faf019380b1a1c839cfa3f2349cc36d536a40",
+      "description": "Pokémon HOME character render shared through PokeAPI sprites",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    },
+    {
+      "file": "charizard.png",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/6.png",
+      "format": "PNG",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "bytes": 130368,
+      "sha256": "ffe2db1065f91feda24f21c81c461e4ca6b863cf31afb4e4918aba79fb31ee70",
+      "description": "Pokémon HOME character render shared through PokeAPI sprites",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    },
+    {
+      "file": "eevee.png",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/133.png",
+      "format": "PNG",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "bytes": 107485,
+      "sha256": "78febefb2aba3614b96528455e9c90242cc025d0eb392ee3a43256671962655f",
+      "description": "Pokémon HOME character render shared through PokeAPI sprites",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    },
+    {
+      "file": "gengar.png",
+      "source": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/94.png",
+      "format": "PNG",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "bytes": 139101,
+      "sha256": "33c68a1f380d80d89c4ea1505a7d6d2a10358665a18acb3fd3e069a091659744",
+      "description": "Pokémon HOME character render shared through PokeAPI sprites",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    },
+    {
+      "file": "charizard-card.webp",
+      "source": "https://raw.githubusercontent.com/remirth/OpenPokemonImages/master/.images/cards/sv3/sv3-223_large.webp",
+      "format": "WEBP",
+      "dimensions": {
+        "width": 733,
+        "height": 1024
+      },
+      "bytes": 250614,
+      "sha256": "4b5eea6872004f3c9643a82db38ae19e0f6d0765ae9f9267c4c318b3c0505ed0",
+      "description": "Charizard ex, Obsidian Flames, 223/197",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    },
+    {
+      "file": "pikachu-card.webp",
+      "source": "https://raw.githubusercontent.com/remirth/OpenPokemonImages/master/.images/cards/swsh12/swsh12-49_large.webp",
+      "format": "WEBP",
+      "dimensions": {
+        "width": 734,
+        "height": 1024
+      },
+      "bytes": 111172,
+      "sha256": "26b69deb6c36b8a41c57edddeaa1de54d206d72960b4c3ec2a449ada89926c59",
+      "description": "Pikachu, Silver Tempest, 049/195",
+      "note": "Artwork belongs to its respective Pokémon rights holders. Character renders are illustrations, not product photography."
+    }
+  ],
+  "unavailable_product_photography": [
+    "Elite Trainer Box",
+    "Booster pack",
+    "Plush toys"
+  ],
+  "blocked_sources": [
+    {
+      "url": "https://images.pokemontcg.io/sv3/223_hires.png",
+      "error": "Proxy tunnel returned 403 Forbidden"
+    },
+    {
+      "url": "https://images.pokemontcg.io/swsh12/49_hires.png",
+      "error": "Proxy tunnel returned 403 Forbidden"
+    },
+    {
+      "url": "https://www.pokemoncenter.com/product/290-85632/pokemon-tcg-scarlet-and-violet-151-pokemon-center-elite-trainer-box",
+      "error": "Proxy tunnel returned 403 Forbidden"
+    },
+    {
+      "url": "https://assets.tcgdex.net/en/swsh/swsh12/049/high.png",
+      "error": "Proxy tunnel returned 403 Forbidden"
+    }
+  ]
+}
