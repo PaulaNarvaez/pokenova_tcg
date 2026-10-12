@@ -6,6 +6,7 @@
 - Instala las dependencias con `npm ci` y respeta `package-lock.json`.
 - Usa `npm run dev` para desarrollo, `npm run build` para producción, `npm test` para la lógica y `npm run test:e2e` para los flujos del navegador.
 - Mantén la tienda en español y los precios de venta en pesos chilenos (CLP).
+- Presenta Pokénova como productos Pokémon e impresión 3D a medida: cajas para mazos, organizadores y soportes para cartas. La cotización se realiza por WhatsApp; el diseño, las medidas, los materiales y el precio se acuerdan en la consulta.
 - No presentes precios o stock de ejemplo como información comercial real. Confirma el valor vigente, la disponibilidad y el envío mediante la atención de la tienda.
 - Mantén el carrito como una lista de consulta, sin pagos ni reservas. Al pulsar **Consultar mi pedido**, limpia todo el carrito local; al consultar un producto desde su ventana de detalles, elimina solo ese producto del carrito.
 - La sección **Compramos tus cartas** recibe consultas por challa/cartas sueltas, lotes y productos sellados. La tasación se coordina por WhatsApp; no prometas un precio fijo ni una compra automática.
@@ -21,5 +22,6 @@
 - El número público de WhatsApp está en `src/site.config.js`: **+56 9 9871 6582**.
 - La atención de la tienda utiliza solo WhatsApp, según la preferencia de la usuaria.
 - El catálogo de demostración está en `src/catalog.js`.
+- Las opciones y el formulario de cotización de impresión 3D están en `src/CustomPrints.jsx`. Son servicios a cotizar, sin precios ni existencias inventados.
 - No guardes credenciales ni archivos `.env` en Git.
 - La compilación acepta `VITE_BASE_PATH` para alojarse en una subruta, por ejemplo `/pokenova_tcg/` en GitHub Pages.

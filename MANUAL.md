@@ -43,6 +43,7 @@ Si un dato está por definir, indícalo. Los precios y existencias de ejemplo no
 | Número de WhatsApp | `src/site.config.js` |
 | Portada, textos del catálogo, Quiénes somos y pie de página | `src/App.jsx` |
 | Textos y mensajes de la sección de compra de challa y sellados | `src/Buyback.jsx` |
+| Servicios y formulario de cotización de impresión 3D a medida | `src/CustomPrints.jsx` |
 | Colores, tamaños, tarjetas, fondo y animaciones | `src/styles.css` |
 | Símbolo del logo e icono de la pestaña | `public/favicon.svg` |
 | Título de la pestaña y descripción para buscadores | `index.html` |
@@ -205,6 +206,14 @@ whatsapp: '56998716582',
 Usa el código de país y el número completo, solamente con dígitos: sin `+`, espacios ni guiones. Ese valor actualiza los enlaces de atención de toda la tienda.
 
 Los mensajes preparados para consultas de productos y pedidos están en `src/App.jsx`; los mensajes para ofrecer challa o sellados están en `src/Buyback.jsx`.
+
+### Impresión 3D a medida
+
+Las opciones de cajas para mazos, organizadores y soportes están en `src/CustomPrints.jsx`. Allí puedes editar sus explicaciones y el mensaje de cotización.
+
+El formulario permite elegir el formato de la colección e indicar medidas en milímetros, color e idea del diseño. Las medidas y el color son opcionales; el cliente puede consultar antes de tenerlos definidos. El mensaje se prepara para WhatsApp y el cliente debe enviarlo allí.
+
+Estos servicios no se agregan al carrito ni tienen un precio fijo en el catálogo. El diseño, los materiales, el precio y la disponibilidad se confirman durante la conversación. Si incorporamos productos 3D con fotos y precios confirmados, podremos añadirlos al catálogo como accesorios.
 
 ### Portada, Quiénes somos y pie de página
 

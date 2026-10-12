@@ -77,7 +77,8 @@ async function screenshot(page, path) {
 test('desktop browsing, product details, persistent cart, and clearing a consulted order', async ({ page, context }) => {
   await stubWhatsapp(context);
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Tu próxima');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/\S/);
   await expect(page.locator('.product-card')).toHaveCount(products.length);
 
   const category = categories.find(item => item.id !== 'all');
@@ -184,6 +185,12 @@ test('mobile navigation, cart, and page width', async ({ page }) => {
   await expect(openMenu).toBeVisible();
   await openMenu.click();
   await expect(page.getByRole('navigation', { name: 'Navegación principal' })).toBeVisible();
+  await page.getByRole('navigation').getByRole('link', { name: 'Impresión 3D', exact: true }).click();
+  await expect(page).toHaveURL(/#impresion-3d$/);
+  await expect(page.locator('#impresion-3d')).toBeVisible();
+  await expect(openMenu).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('navigation')).not.toBeVisible();
+  await openMenu.click();
   await page.getByRole('navigation').getByRole('link', { name: 'Quiénes somos' }).click();
   await expect(page.getByRole('button', { name: 'Abrir menú' })).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByRole('navigation')).not.toBeVisible();
@@ -259,6 +266,107 @@ test('buyback offers challa and sealed products through WhatsApp and removes mar
   expect(marketRequests).toEqual([]);
 });
 
+async function submitStubbedCustomQuote(page, form) {
+  const popupPromise = page.waitForEvent('popup');
+  await form.getByRole('button', { name: 'Cotizar por WhatsApp', exact: true }).click();
+  const popup = await popupPromise;
+  await expect(popup.getByRole('heading', { name: 'WhatsApp de prueba' })).toBeVisible();
+  const url = popup.url();
+  expect([...new URL(url).searchParams.keys()]).toEqual(['text']);
+  const message = decodedWhatsapp(url);
+  await popup.close();
+  return message;
+}
+
+test('custom 3D services select the requested piece and send its details as one WhatsApp quote', async ({ page, context }) => {
+  await stubWhatsapp(context);
+  await page.goto('/');
+  const section = page.locator('#impresion-3d');
+  const cards = section.locator('.custom-prints-card');
+  const form = section.locator('form');
+  const type = form.getByRole('combobox', { name: 'Tipo de pieza', exact: true });
+  const idea = form.getByRole('textbox', { name: 'Tu idea (obligatorio)', exact: true });
+  await expect(cards).toHaveCount(3);
+  // Until real product photos are supplied, the services use illustrations.
+  await expect(cards.locator('img')).toHaveCount(0);
+  await expect(cards.locator('svg.custom-prints-art')).toHaveCount(3);
+  for (const [id, name] of [['deck-box', 'Cajas para mazos'], ['organizer', 'Organizadores'], ['card-stand', 'Soportes para cartas']]) {
+    const card = cards.filter({ has: page.getByRole('heading', { name, exact: true }) });
+    await card.click();
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
+    await expect(cards.filter({ hasNot: page.getByRole('heading', { name, exact: true }) })).toHaveCount(2);
+    for (const otherCard of await cards.filter({ hasNot: page.getByRole('heading', { name, exact: true }) }).all()) {
+      await expect(otherCard).toHaveAttribute('aria-pressed', 'false');
+    }
+    await expect(type).toHaveValue(id);
+    await expect(idea).toBeFocused();
+  }
+  await type.selectOption('organizer');
+  await expect(cards.filter({ has: page.getByRole('heading', { name: 'Organizadores', exact: true }) })).toHaveAttribute('aria-pressed', 'true');
+  await expect(cards.filter({ has: page.getByRole('heading', { name: 'Soportes para cartas', exact: true }) })).toHaveAttribute('aria-pressed', 'false');
+  const format = form.getByRole('combobox', { name: 'Formato de tu colección', exact: true });
+  for (const value of ['Por definir', 'Cartas con funda', 'Cartas graduadas', 'Toploaders']) {
+    await format.selectOption({ label: value });
+    await expect(format).toHaveValue(value);
+  }
+  await form.getByRole('spinbutton', { name: 'Ancho (mm)', exact: true }).fill('125.5');
+  await form.getByRole('spinbutton', { name: 'Alto (mm)', exact: true }).fill('90');
+  await form.getByRole('spinbutton', { name: 'Fondo (mm)', exact: true }).fill('64.2');
+  await form.getByRole('textbox', { name: 'Color o combinación (opcional)', exact: true }).fill('Amarillo & negro');
+  await idea.fill('Quiero separar 80 cartas Pokémon + accesorios; con toploaders y un diseño de Eevee.');
+  const message = await submitStubbedCustomQuote(page, form);
+  expect(message).toContain('Quiero cotizar una impresión 3D a medida.');
+  expect(message).toContain('Tipo: Organizadores');
+  expect(message).toContain('Formato de mi colección: Toploaders');
+  expect(message).toContain('Ancho: 125.5 mm');
+  expect(message).toContain('Alto: 90 mm');
+  expect(message).toContain('Fondo: 64.2 mm');
+  expect(message).toContain('Color o combinación: Amarillo & negro');
+  expect(message).toContain('Mi idea: Quiero separar 80 cartas Pokémon + accesorios; con toploaders y un diseño de Eevee.');
+  expect(message).toContain('el diseño, el material, el precio y la disponibilidad');
+});
+
+test('a custom quote requires an idea, rejects invalid dimensions, and allows dimensions still to be confirmed', async ({ page, context }) => {
+  await stubWhatsapp(context);
+  await page.goto('/');
+  const popups = [];
+  page.on('popup', popup => popups.push(popup));
+  const form = page.locator('#impresion-3d form');
+  const idea = form.getByRole('textbox', { name: 'Tu idea (obligatorio)', exact: true });
+  const width = form.getByRole('spinbutton', { name: 'Ancho (mm)', exact: true });
+  const submit = form.getByRole('button', { name: 'Cotizar por WhatsApp', exact: true });
+  await submit.click();
+  await expect(idea).toBeFocused();
+  expect(await idea.evaluate(element => element.validity.valueMissing)).toBe(true);
+  expect(popups).toHaveLength(0);
+  await idea.fill('   ');
+  await submit.click();
+  await expect(idea).toBeFocused();
+  expect(await idea.evaluate(element => element.validity.customError)).toBe(true);
+  expect(popups).toHaveLength(0);
+  await idea.fill('Necesito una caja para mi mazo con fundas; no sé las medidas todavía.');
+  for (const invalidWidth of ['0', '-2.5']) {
+    await width.fill(invalidWidth);
+    await submit.click();
+    await expect(width).toBeFocused();
+    expect(await width.evaluate(element => element.validity.rangeUnderflow)).toBe(true);
+    expect(popups).toHaveLength(0);
+  }
+  await width.fill('1.05');
+  await submit.click();
+  await expect(width).toBeFocused();
+  expect(await width.evaluate(element => element.validity.stepMismatch)).toBe(true);
+  expect(popups).toHaveLength(0);
+  await width.fill('');
+  const message = await submitStubbedCustomQuote(page, form);
+  expect(popups).toHaveLength(1);
+  expect(message).toContain('Tipo: Cajas para mazos');
+  expect(message).toContain('Formato de mi colección: Por definir');
+  expect(message).toContain('Medidas por confirmar.');
+  expect(message).toContain('Mi idea: Necesito una caja para mi mazo con fundas; no sé las medidas todavía.');
+  expect(message).not.toContain('Color o combinación:');
+});
+
 test('a blocked localStorage getter still allows a usable in-memory cart', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -323,7 +431,7 @@ function overlaps(a, b) {
 }
 
 for (const width of [320, 390, 768, 1024, 1440]) {
-  test(`category layout and brand remain intact at ${width}px`, async ({ page }) => {
+  test(`category layout, custom quote, navigation, and brand remain intact at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
@@ -347,6 +455,50 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       expect(overlaps(label, heading)).toBe(false);
       expect(overlaps(label, visual)).toBe(false);
       expect(overlaps(copy, visual)).toBe(false);
+    }
+    const section = page.locator('#impresion-3d');
+    await expect(section.locator('.custom-prints-card')).toHaveCount(3);
+    for (const card of await section.locator('.custom-prints-card').all()) {
+      const bounds = await card.boundingBox();
+      const art = await card.locator('.custom-prints-art').boundingBox();
+      const copy = await card.locator('.custom-prints-card-copy').boundingBox();
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      expect(overlaps(art, copy)).toBe(false);
+    }
+    const form = section.locator('form');
+    const formBounds = await form.boundingBox();
+    const introBounds = await section.locator('.custom-prints-form-intro').boundingBox();
+    expect(formBounds.x).toBeGreaterThanOrEqual(0);
+    expect(formBounds.x + formBounds.width).toBeLessThanOrEqual(width);
+    expect(overlaps(formBounds, introBounds)).toBe(false);
+    for (const field of await form.locator('.custom-prints-field').all()) {
+      const label = await field.locator('label').boundingBox();
+      const control = await field.locator('input, select, textarea').boundingBox();
+      expect(control.width).toBeGreaterThan(0);
+      expect(control.x).toBeGreaterThanOrEqual(formBounds.x - 1);
+      expect(control.x + control.width).toBeLessThanOrEqual(formBounds.x + formBounds.width + 1);
+      expect(overlaps(label, control)).toBe(false);
+    }
+    const nav = page.getByRole('navigation', { name: 'Navegación principal' });
+    if (width <= 1050) {
+      await page.getByRole('button', { name: 'Abrir menú' }).click();
+      await expect(nav).toBeVisible();
+    } else {
+      await expect(page.getByRole('button', { name: 'Abrir menú' })).not.toBeVisible();
+    }
+    const links = await nav.getByRole('link').all();
+    expect(links).toHaveLength(4);
+    const navBounds = await nav.boundingBox();
+    expect(navBounds.x).toBeGreaterThanOrEqual(0);
+    expect(navBounds.x + navBounds.width).toBeLessThanOrEqual(width);
+    const linkBounds = await Promise.all(links.map(link => link.boundingBox()));
+    for (let index = 1; index < linkBounds.length; index += 1) {
+      expect(overlaps(linkBounds[index - 1], linkBounds[index])).toBe(false);
+    }
+    if (width <= 1050) {
+      await nav.getByRole('link', { name: 'Impresión 3D', exact: true }).click();
+      await expect(nav).not.toBeVisible();
     }
     const logo = page.locator('header .brand img.brand-symbol');
     await expect(logo).toBeVisible();

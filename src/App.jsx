@@ -1,9 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Menu, MessageCircle, Minus, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Trash2, X, Zap } from 'lucide-react';
+import { ArrowDown, ArrowRight, Box, ArrowUpRight, Check, ChevronDown, Heart, Menu, MessageCircle, Minus, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Trash2, X, Zap } from 'lucide-react';
 import { categories, filterProducts, formatPrice, products } from './catalog.js';
 import { addToCart, getCartCount, getCartSubtotal, readCart, removeFromCart, saveCart, updateQuantity } from './cart.js';
 import { whatsappUrl } from './site.config.js';
 import Buyback from './Buyback.jsx';
+import CustomPrints from './CustomPrints.jsx';
 
 const imagePath = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
 const backgroundGlints = Array.from({ length: 24 }, (_, index) => ({
@@ -112,11 +113,12 @@ export default function App() {
       <span className="background-spark spark-a">✦</span><span className="background-spark spark-b">✧</span>
     </div>
     <a className="skip-link" href="#catalogo">Saltar al catálogo</a>
-    <div className="announcement"><span><Zap size={13} fill="currentColor" /> Tu próxima aventura empieza aquí.</span><span className="announcement-right">CARTAS. COLECCIONES. BUENA ENERGÍA. <Sparkles size={13} /></span></div>
+    <div className="announcement"><span><Zap size={13} fill="currentColor" /> Pokémon e impresión 3D a tu medida.</span><span className="announcement-right">POKÉMON. IMPRESIÓN 3D. A MEDIDA. <Sparkles size={13} /></span></div>
     <header className="header">
       <div className="nav-wrap container">
-        <a className="brand" href="#inicio" aria-label="Pokenova TCG, inicio"><img className="brand-symbol" src={imagePath('/favicon.svg?version=2')} alt="" /><span>pokénova<span className="brand-tcg">TCG & MORE</span></span></a>
+        <a className="brand" href="#inicio" aria-label="Pokenova TCG, inicio"><img className="brand-symbol" src={imagePath('/favicon.svg?version=2')} alt="" /><span>pokénova<span className="brand-tcg">TCG & 3D</span></span></a>
         <nav className={menuOpen ? 'navigation open' : 'navigation'} aria-label="Navegación principal">
+          <a href="#impresion-3d" onClick={closeMenu}>Impresión 3D</a>
           <a href="#catalogo" onClick={closeMenu}>Explorar tienda <ChevronDown size={12} /></a>
           <a href="#compramos" onClick={closeMenu}>Compramos tus cartas</a>
           <a href="#nosotros" onClick={closeMenu}>Quiénes somos</a>
@@ -130,38 +132,40 @@ export default function App() {
     </header>
 
     <main>
-      <section className="hero container" id="inicio">
+      <section className="hero hero-custom container" id="inicio">
         <div className="hero-copy">
-          <h1>Tu próxima<br />{' '}gran <span className="collection-word">colección<svg viewBox="0 0 440 25" aria-hidden="true"><path d="M4 17C90 1 325 0 435 13M14 22C148 9 303 9 409 21" /></svg></span>.</h1>
-          <p>La emoción de abrir un sobre. La alegría de encontrar<br className="desktop-break" /> tu Pokémon favorito. Todo empieza en Pokénova.</p>
-          <div className="hero-buttons"><a href="#catalogo" className="button button-dark">Encuentra tu favorito <ArrowUpRight size={19} /></a><a href="#nosotros" className="text-link">Conócenos <span><ArrowRight size={17} /></span></a></div>
-          <div className="hero-note"><span className="tiny-avatars"><img src={imagePath('/images/eevee.png')} alt="" /><img src={imagePath('/images/gengar.png')} alt="" /><img src={imagePath('/images/pikachu.png')} alt="" /></span><span>Para quienes nunca<br />{' '}<strong>dejaron de coleccionar.</strong></span><Heart size={18} className="small-heart" /></div>
+          <h1>Pokémon +<br />{' '}impresión 3D<br />{' '}<span className="collection-word">a tu medida<svg viewBox="0 0 440 25" aria-hidden="true"><path d="M4 17C90 1 325 0 435 13M14 22C148 9 303 9 409 21" /></svg></span>.</h1>
+          <p>Productos Pokémon y accesorios impresos en 3D para organizar, guardar y cuidar tus cartas. Diseñamos contigo según tu colección y tus medidas.</p>
+          <div className="hero-buttons"><a href="#impresion-3d" className="button button-dark">Cotizar impresión 3D <ArrowUpRight size={19} /></a><a href="#catalogo" className="text-link">Ver productos Pokémon <span><ArrowRight size={17} /></span></a></div>
+          <div className="hero-note"><span className="tiny-avatars"><img src={imagePath('/images/eevee.png')} alt="" /><img src={imagePath('/images/gengar.png')} alt="" /><img src={imagePath('/images/pikachu.png')} alt="" /></span><span>Para tus cartas.<br />{' '}<strong>Para tu forma de coleccionar.</strong></span><Heart size={18} className="small-heart" /></div>
         </div>
         <div className="hero-art" aria-label="Pikachu y cartas Pokémon en nuestra colección" role="img">
-          <div className="hero-grid" /><span className="hero-art-label">POKÉMON CLUB — EST. 2026</span><span className="hero-outline">PIKA!</span>
+          <div className="hero-grid" /><span className="hero-art-label">POKÉMON + IMPRESIÓN 3D</span><span className="hero-outline">PIKA!</span>
           <div className="orbital orbital-one" /><div className="orbital orbital-two" />
           <Sparkles className="hero-spark spark-one" size={39} strokeWidth={1.4} /><Star className="hero-spark spark-two" size={25} strokeWidth={1.5} />
           <img className="hero-pikachu" src={imagePath('/images/pikachu-hero.png')} alt="" fetchPriority="high" />
-          <div className="floating-card"><img src={imagePath('/images/pikachu-card.webp')} alt="" /><span><Sparkles size={11} /> UN PEQUEÑO TESORO</span></div>
+          <div className="floating-card"><img src={imagePath('/images/pikachu-card.webp')} alt="" /><span><Sparkles size={11} /> TU COLECCIÓN</span></div>
           <div className="hero-sticker"><Zap size={25} fill="currentColor" /><span>100%<br />{' '}<b>fan energy</b></span></div>
           <div className="hero-art-footer"><span>ATRAPA ESE MOMENTO.</span><ArrowDown size={19} /></div>
         </div>
       </section>
 
-      <div className="ticker" aria-hidden="true"><div>{Array.from({ length: 4 }, (_, i) => <span key={i}>UN UNIVERSO POR COLECCIONAR <Sparkles size={18} /> TCG & MÁS <Pokeball /> HECHO PARA FANS <Star size={18} /></span>)}</div></div>
+      <div className="ticker" aria-hidden="true"><div>{Array.from({ length: 4 }, (_, i) => <span key={i}>POKÉMON + IMPRESIÓN 3D <Sparkles size={18} /> ACCESORIOS A MEDIDA <Pokeball /> ORGANIZA TU COLECCIÓN <Star size={18} /></span>)}</div></div>
 
       <section className="category-section container" aria-labelledby="category-title">
-        <div className="section-intro"><div><span className="eyebrow">HAY UN FAVORITO PARA CADA FAN</span><h2 id="category-title">Encuentra tu tipo.</h2></div><p>Para tu mazo, tu repisa<br />{' '}o ese regalo que lo dice todo.</p></div>
+        <div className="section-intro"><div><span className="eyebrow">POKÉMON Y ACCESORIOS PARA TUS CARTAS</span><h2 id="category-title">Encuentra tu tipo.</h2></div><p>Productos para coleccionar.<br />{' '}Diseños pensados para ti.</p></div>
         <div className="category-grid">
           <button className="category-tile category-cards" onClick={() => chooseCategory('cards')}><span className="tile-index">01 / TCG</span><div className="tile-copy"><h3>Cartas<br />{' '}individuales</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><img src={imagePath('/images/charizard-card.webp')} alt="" /></div></button>
           <button className="category-tile category-sealed" onClick={() => chooseCategory('sealed')}><span className="tile-index">02 / LA SORPRESA</span><div className="tile-copy"><h3>Productos<br />{' '}sellados</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><div className="tile-package"><Pokeball /><span>TCG</span></div></div></button>
           <button className="category-tile category-plush" onClick={() => chooseCategory('plush')}><span className="tile-index">03 / COMPAÑEROS</span><div className="tile-copy"><h3>Peluches<br />{' '}& figuras</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><img src={imagePath('/images/eevee.png')} alt="" /></div></button>
-          <button className="category-tile category-accessories" onClick={() => chooseCategory('accessories')}><span className="tile-index">04 / EL EXTRA</span><div className="tile-copy"><h3>Cuida tu<br />{' '}colección</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><div className="tile-binder"><Pokeball /><span>COLLECT<br />{' '}GOOD THINGS.</span></div></div></button>
+          <a className="category-tile category-custom-print" href="#impresion-3d"><span className="tile-index">04 / A TU MEDIDA</span><div className="tile-copy"><h3>Impresiones<br />{' '}3D a medida</h3><span className="circle-arrow"><ArrowUpRight size={21} /></span></div><div className="tile-visual" aria-hidden="true"><div className="tile-3d"><Box size={42} strokeWidth={1.4} /><span>3D</span></div></div></a>
         </div>
       </section>
 
+      <CustomPrints />
+
       <section className="catalog-section container" id="catalogo" aria-labelledby="catalog-title">
-        <div className="section-intro"><div><span className="eyebrow"><Sparkles size={14} /> EL SIGUIENTE EN TU COLECCIÓN</span><h2 id="catalog-title">Amor a primera carta<span className="heading-dot">.</span></h2></div><span className="catalog-label">CATÁLOGO DE MUESTRA</span></div>
+        <div className="section-intro"><div><span className="eyebrow"><Sparkles size={14} /> EXPLORA NUESTRO CATÁLOGO POKÉMON</span><h2 id="catalog-title">Pokémon para tu colección<span className="heading-dot">.</span></h2></div><span className="catalog-label">CATÁLOGO DE MUESTRA</span></div>
         <p className="demo-notice">Estamos preparando la tienda. Precios y existencias de ejemplo, con imágenes referenciales; consulta los valores vigentes por WhatsApp.</p>
         <div className="catalog-controls"><div className="filter-tabs" aria-label="Categorías de productos">{categories.map(item => <button key={item.id} onClick={() => setCategory(item.id)} aria-pressed={category === item.id} className={category === item.id ? 'active' : ''}>{item.label}</button>)}</div><div className="search-sort"><label className="search-field"><Search size={17} /><input ref={searchRef} type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Busca tu favorito" aria-label="Buscar en el catálogo" /></label><label className="sort-field"><span className="sr-only">Ordenar productos</span><select value={sort} onChange={e => setSort(e.target.value)}><option value="featured">Destacados</option><option value="price-asc">Menor precio</option><option value="price-desc">Mayor precio</option></select><ChevronDown size={14} /></label></div></div>
         <p className="result-count" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'favorito por descubrir' : 'favoritos por descubrir'}</p>
@@ -173,21 +177,21 @@ export default function App() {
           <div className="product-info"><span className="product-category">{product.categoryLabel}</span><button className="product-name" onClick={() => setSelected(product)}>{product.name}</button><div className="product-bottom"><div><strong>{formatPrice(product.price)} <small>CLP</small></strong><span>Precio de ejemplo</span></div><button className="add-button" onClick={() => add(product)} aria-label={`Agregar ${product.name} al carrito`}><Plus size={20} /></button></div></div>
         </article>)}</div>
         {filtered.length === 0 && <div className="empty-search"><Search size={32} /><h3>Ese Pokémon se nos escondió.</h3><p>Prueba otra búsqueda o explora todas las categorías.</p><button className="button button-dark" onClick={() => { setQuery(''); setCategory('all'); }}>Ver todos los productos <ArrowRight size={16} /></button></div>}
-        <div className="catalog-bottom"><span><MessageCircle size={17} /> ¿Buscas algo especial? Vamos a encontrarlo.</span><a href={whatsappUrl('¡Hola, Pokenova! Estoy buscando un producto Pokémon. ¿Me ayudan con disponibilidad y precio?')} target="_blank" rel="noreferrer">Hablemos por WhatsApp <ArrowUpRight size={17} /></a></div>
+        <div className="catalog-bottom"><span><MessageCircle size={17} /> ¿Quieres un accesorio con tus medidas? Cuéntanos tu idea.</span><a href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar por un producto Pokémon o un accesorio de impresión 3D a medida.')} target="_blank" rel="noreferrer">Hablemos por WhatsApp <ArrowUpRight size={17} /></a></div>
       </section>
 
       <Buyback />
 
       <section className="about-section container" id="nosotros" aria-labelledby="about-title">
-        <div className="about-art"><div className="about-outline">FAN<br />{' '}CLUB.</div><img src={imagePath('/images/gengar.png')} alt="Gengar" loading="lazy" /><div className="about-badge"><Heart size={23} /><span>DE FANS<br />{' '}<strong>PARA FANS</strong></span></div><Sparkles size={34} className="about-spark" /></div>
-        <div className="about-copy"><span className="eyebrow">HOLA, SOMOS POKÉNOVA <span className="wave" aria-hidden="true">✌️</span></span><h2>Hay cosas que<br />{' '}nunca dejamos<br />{' '}de <span>querer.</span></h2><p>Como esa emoción al abrir un sobre, reconocer tu Pokémon favorito o encontrar la pieza que le faltaba a tu colección.</p><p>Pokénova nace para reunir todo ese universo en un solo lugar: cartas, productos TCG, peluches y accesorios. Un espacio pensado para quienes juegan, coleccionan o simplemente aman Pokémon.</p><a className="text-link" href={whatsappUrl('¡Hola, Pokenova! Me gustaría conocer más sobre la tienda.')} target="_blank" rel="noreferrer">Conversemos de Pokémon <span><ArrowUpRight size={17} /></span></a></div>
+        <div className="about-art"><div className="about-outline">TCG<br />{' '}+ 3D.</div><img src={imagePath('/images/gengar.png')} alt="Gengar" loading="lazy" /><div className="about-badge"><Heart size={23} /><span>DE FANS<br />{' '}<strong>PARA FANS</strong></span></div><Sparkles size={34} className="about-spark" /></div>
+        <div className="about-copy"><span className="eyebrow">HOLA, SOMOS POKÉNOVA <span className="wave" aria-hidden="true">✌️</span></span><h2>Pokémon y diseño<br />{' '}pensados para<br />{' '}<span>tu colección.</span></h2><p>Nos gustan Pokémon y las colecciones bien cuidadas. Por eso reunimos productos TCG y accesorios hechos con impresión 3D a medida.</p><p>Creamos cajas, organizadores y soportes según el formato de tus cartas y sus fundas. Conversemos sobre tus medidas, colores e ideas para definir una pieza que se adapte a ti.</p><a className="text-link" href={whatsappUrl('¡Hola, Pokenova! Me gustaría conocer más sobre la tienda.')} target="_blank" rel="noreferrer">Conversemos de Pokémon <span><ArrowUpRight size={17} /></span></a></div>
       </section>
 
-      <section className="contact-banner container"><div><span className="eyebrow">TÚ PREGUNTA. NOSOTROS TE AYUDAMOS.</span><h2>¿Una duda? <span>¡Te leemos!</span><span className="chat-emoji" aria-hidden="true">💬</span></h2><p>Consulta precios, disponibilidad o ese producto que tienes en mente.</p></div><a className="button button-dark" href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar precios y disponibilidad.')} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Escríbenos por WhatsApp <ArrowUpRight size={18} /></a></section>
+      <section className="contact-banner container"><div><span className="eyebrow">TÚ PREGUNTA. NOSOTROS TE AYUDAMOS.</span><h2>¿Una duda? <span>¡Te leemos!</span><span className="chat-emoji" aria-hidden="true">💬</span></h2><p>Consulta por productos Pokémon o cuéntanos qué pieza 3D necesitas.</p></div><a className="button button-dark" href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar por productos Pokémon o cotizar una pieza de impresión 3D a medida.')} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Escríbenos por WhatsApp <ArrowUpRight size={18} /></a></section>
     </main>
 
-    <footer className="footer"><div className="container footer-top"><a className="brand" href="#inicio"><img className="brand-symbol" src={imagePath('/favicon.svg?version=2')} alt="" /><span>pokénova<span className="brand-tcg">TCG & MORE</span></span></a><p>Un universo por coleccionar.<br />{' '}Una aventura para compartir.</p><div className="footer-links"><a href="#catalogo">La tienda</a><a href="#compramos">Compramos tus cartas</a><a href="#nosotros">Nuestra historia</a><a href={whatsappUrl('¡Hola, Pokenova! Quisiera hacer una consulta.')} target="_blank" rel="noreferrer">Contacto <ArrowUpRight size={13} /></a></div></div><div className="container footer-bottom"><span>© {new Date().getFullYear()} Pokénova TCG. Hecho con ❤️ por PJ.</span><span>Proyecto independiente. Pokémon y sus marcas pertenecen a sus respectivos titulares.</span></div></footer>
-    <a className="floating-whatsapp" href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar un precio.')} target="_blank" rel="noreferrer" aria-label="Consultar precios por WhatsApp"><MessageCircle size={25} /><span>¿Hablamos?</span><span className="whatsapp-dot" /></a>
+    <footer className="footer"><div className="container footer-top"><a className="brand" href="#inicio"><img className="brand-symbol" src={imagePath('/favicon.svg?version=2')} alt="" /><span>pokénova<span className="brand-tcg">TCG & 3D</span></span></a><p>Pokémon e impresión 3D.<br />{' '}Accesorios a tu medida.</p><div className="footer-links"><a href="#impresion-3d">Impresión 3D</a><a href="#catalogo">La tienda</a><a href="#compramos">Compramos tus cartas</a><a href="#nosotros">Nuestra historia</a><a href={whatsappUrl('¡Hola, Pokenova! Quisiera hacer una consulta.')} target="_blank" rel="noreferrer">Contacto <ArrowUpRight size={13} /></a></div></div><div className="container footer-bottom"><span>© {new Date().getFullYear()} Pokénova TCG. Hecho con ❤️ por PJ.</span><span>Proyecto independiente. Pokémon y sus marcas pertenecen a sus respectivos titulares.</span></div></footer>
+    <a className="floating-whatsapp" href={whatsappUrl('¡Hola, Pokenova! Quisiera consultar por Pokémon o impresión 3D a medida.')} target="_blank" rel="noreferrer" aria-label="Consultar precios por WhatsApp"><MessageCircle size={25} /><span>¿Hablamos?</span><span className="whatsapp-dot" /></a>
     <div className={toast ? 'toast visible' : 'toast'} role="status" aria-live="polite">{toast && <><span><Check size={17} /></span>{toast.message}<button className="icon-button" aria-label="Cerrar aviso" onClick={() => setToast(null)}><X size={16} /></button></>}</div>
 
     {selected && <Dialog onClose={() => setSelected(null)} title="Un favorito de cerca" className="product-dialog"><div className={`detail-art tone-${selected.tone}`}><ProductArt product={selected} /></div><span className="eyebrow">{selected.categoryLabel}</span><h3>{selected.name}</h3><p>{selected.description}</p><div className="detail-price"><strong>{formatPrice(selected.price)} CLP</strong><span>Precio de ejemplo · Consulta el valor vigente.</span></div>{selected.category === 'plush' && <p className="image-disclaimer">Imagen del personaje como referencia; no representa una fotografía del peluche disponible.</p>}<div className="detail-actions"><button className="button button-dark" onClick={() => add(selected)}><ShoppingBag size={18} /> Agregar al carrito</button><a className="button button-outline" href={whatsappUrl(`¡Hola, Pokenova! Quisiera consultar el precio y disponibilidad de ${selected.name}.`)} onClick={() => consult(selected.id)} target="_blank" rel="noreferrer"><MessageCircle size={18} /> Consultar precio</a></div></Dialog>}

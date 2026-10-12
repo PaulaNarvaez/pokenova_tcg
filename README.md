@@ -1,6 +1,6 @@
 # ⚡ Pokénova TCG
 
-Estoy creando Pokénova TCG para reunir cartas, sobres, ETB, peluches, figuras y accesorios de Pokémon en una tienda con atención por WhatsApp.
+Estoy creando Pokénova TCG para reunir productos Pokémon e impresiones 3D a medida: cajas, organizadores y soportes pensados para las cartas de cada colección, con atención por WhatsApp.
 
 ## 🛠️ Cómo la estoy construyendo
 
@@ -13,7 +13,7 @@ Para desarrollar la página, uso:
 
 ## 🛍️ Qué estoy incorporando
 
-Incluyo un catálogo con búsqueda y filtros, fichas de productos, un carrito de consulta, una sección sobre Pokénova y otra para comprar challa y productos sellados.
+Incluyo un catálogo Pokémon, un carrito de consulta y una sección para cotizar piezas 3D según el formato de las cartas, sus medidas y el color elegido. También compro challa y productos sellados.
 
 Por ahora trabajo con productos y precios de ejemplo. Coordino las consultas por WhatsApp, sin pagos dentro de la página.
 
